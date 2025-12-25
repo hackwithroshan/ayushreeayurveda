@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -6,19 +5,20 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 
-// Initialize Cron Jobs
-require('./cronJobs');
+if (!process.env.MONGO_URI) {
+    console.error('FATAL ERROR: MONGO_URI is not defined in .env file.');
+    process.exit(1);
+}
 
 const app = express();
 
-// Middleware - Allow Vercel to connect
 app.use(cors());
 app.use(express.json());
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected Successfully'))
-    .catch(err => console.error('MongoDB Connection Error:', err));
+    .then(() => console.log('MongoDB Connected: Ladies Smart Choice (Port 5000)'))
+    .catch(err => console.error('MongoDB Error:', err.message));
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -42,26 +42,19 @@ app.use('/api/integrations', require('./routes/integrations'));
 app.use('/api/shipping', require('./routes/shipping'));
 app.use('/api/app-data', require('./routes/appData'));
 
-// --- Standalone API Mode ---
+// Static Folder for React Build
 const distPath = path.resolve(__dirname, '..', 'dist');
 
-if (fs.existsSync(distPath) && fs.existsSync(path.join(distPath, 'index.html'))) {
-    console.log('Frontend build found. Serving static files...');
+if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
         res.sendFile(path.join(distPath, 'index.html'));
     });
 } else {
-    // If running on Railway and frontend is on Vercel
-    console.log('Standalone API Mode: No local frontend build detected.');
     app.get('/', (req, res) => {
-        res.json({
-            status: "Online",
-            message: "Ladies Smart Choice API is running.",
-            frontend_location: "External (Vercel)"
-        });
+        res.send('Backend is running. Please run "npm run build" in the root folder to serve the frontend.');
     });
 }
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Ladies Smart Choice Active on Port ${PORT}`));
