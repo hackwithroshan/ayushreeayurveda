@@ -137,7 +137,8 @@ const HomePage: React.FC<{ user: any; logout: () => void }> = ({ user, logout })
           <section key={section.id} className="max-w-7xl mx-auto py-12 md:py-20 px-4 overflow-hidden">
               <h2 className="text-2xl md:text-4xl font-brand font-black text-center mb-10 md:mb-16 uppercase italic tracking-tighter">Shop From Videos</h2>
               <div className="flex overflow-x-auto gap-4 md:gap-8 pb-8 -mx-4 px-4 scrollbar-hide md:grid md:grid-cols-4">
-                  {videos.map(v => <VideoListItem key={v.id} video={v} autoplay={siteSettings?.videoAutoplay || false} onClick={() => setSelectedVideo(v)} />)}
+                  {/* Fix: Property 'id' does not exist on type 'ShoppableVideo'. Changed v.id to v._id. */}
+                  {videos.map(v => <VideoListItem key={v._id} video={v} autoplay={siteSettings?.videoAutoplay || false} onClick={() => setSelectedVideo(v)} />)}
               </div>
           </section>
         );
