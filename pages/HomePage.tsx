@@ -73,12 +73,14 @@ const HomePage: React.FC<{ user: any; logout: () => void }> = ({ user, logout })
       case 'Hero':
         if (slides.length === 0) return null;
         
-        // Take dimension settings from the first slide as the global container constraint
+        // Priority 1: Builder Section Settings
+        // Priority 2: Config from first slide (legacy support)
         const globalSlideConfig = slides[0];
-        const desktopHeight = globalSlideConfig.desktopHeight || '650px';
-        const mobileHeight = globalSlideConfig.mobileHeight || '400px';
-        const desktopWidth = globalSlideConfig.desktopWidth || '100%';
-        const mobileWidth = globalSlideConfig.mobileWidth || '100%';
+        const desktopHeight = section.settings?.desktopHeight || globalSlideConfig.desktopHeight || '650px';
+        const mobileHeight = section.settings?.mobileHeight || globalSlideConfig.mobileHeight || '400px';
+        const desktopWidth = section.settings?.desktopWidth || globalSlideConfig.desktopWidth || '100%';
+        const mobileWidth = section.settings?.mobileWidth || globalSlideConfig.mobileWidth || '100%';
+        const customStyles = section.settings?.customStyles || '';
 
         return (
           <section 
@@ -88,7 +90,12 @@ const HomePage: React.FC<{ user: any; logout: () => void }> = ({ user, logout })
                 '--desktop-h': desktopHeight, 
                 '--mobile-h': mobileHeight,
                 '--desktop-w': desktopWidth,
-                '--mobile-w': mobileWidth
+                '--mobile-w': mobileWidth,
+                ...(customStyles ? customStyles.split(';').reduce((acc: any, curr) => {
+                    const [prop, val] = curr.split(':');
+                    if (prop && val) acc[prop.trim()] = val.trim();
+                    return acc;
+                }, {}) : {})
             } as any}
           >
             <div className="h-[var(--mobile-h)] md:h-[var(--desktop-h)] w-[var(--mobile-w)] md:w-[var(--desktop-w)] relative overflow-hidden">
@@ -232,7 +239,7 @@ const HomePage: React.FC<{ user: any; logout: () => void }> = ({ user, logout })
               <div className="relative w-full max-w-md h-[85vh] bg-black rounded-3xl overflow-hidden shadow-2xl ring-1 ring-white/10" onClick={e => e.stopPropagation()}>
                   <button onClick={() => setSelectedVideo(null)} className="absolute top-4 right-4 z-50 text-white/50 hover:text-white p-2 bg-black/40 rounded-full backdrop-blur-md transition-colors">&times;</button>
                   <video src={selectedVideo.videoUrl} className="w-full h-full object-cover" autoPlay playsInline loop />
-                  <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black via-black/60 to-transparent text-white">
+                  <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black via-black/40 to-transparent text-white">
                       <h3 className="text-2xl font-brand font-black mb-1 uppercase tracking-tight">{selectedVideo.title}</h3>
                       <p className="text-brand-accent font-black text-xl mb-6">{selectedVideo.price}</p>
                       <button onClick={() => navigate(`/product/${selectedVideo.productLink}`)} className="w-full bg-white text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl active:scale-95 transition-transform">Get This Look</button>
